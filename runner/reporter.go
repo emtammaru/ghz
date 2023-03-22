@@ -244,7 +244,7 @@ func (r *Reporter) Finalize(stopReason StopReason, total time.Duration) *Report 
 		CountErrors: r.config.countErrors,
 	}
 
-	_ = json.Unmarshal(r.config.data, &rep.Options.Data)
+	rep.Options.Data = "REDACTED"
 
 	_ = json.Unmarshal(r.config.metadata, &rep.Options.Metadata)
 
