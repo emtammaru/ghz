@@ -22,8 +22,6 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 
-	reflectpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
-
 	// To register the xds resolvers and balancers.
 	_ "google.golang.org/grpc/xds"
 )
@@ -110,7 +108,7 @@ func NewRequester(c *RunConfig) (*Requester, error) {
 
 		refCtx := metadata.NewOutgoingContext(ctx, md)
 
-		refClient := grpcreflect.NewClient(refCtx, reflectpb.NewServerReflectionClient(cc))
+		refClient := grpcreflect.NewClientAuto(refCtx, cc)
 
 		mtd, err = protodesc.GetMethodDescFromReflect(c.call, refClient)
 	}
@@ -391,17 +389,18 @@ func (b *Requester) runWorkers(wt load.WorkerTicker, p load.Pacer) error {
 					}
 
 					w := Worker{
-						ticks:            ticks,
-						active:           true,
-						stub:             b.stubs[n],
-						mtd:              b.mtd,
-						config:           b.config,
-						stopCh:           make(chan bool),
-						workerID:         wID,
-						dataProvider:     b.dataProvider,
-						metadataProvider: b.metadataProvider,
-						streamRecv:       b.config.recvMsgFunc,
-						msgProvider:      b.config.dataStreamFunc,
+						ticks:                         ticks,
+						active:                        true,
+						stub:                          b.stubs[n],
+						mtd:                           b.mtd,
+						config:                        b.config,
+						stopCh:                        make(chan bool),
+						workerID:                      wID,
+						dataProvider:                  b.dataProvider,
+						metadataProvider:              b.metadataProvider,
+						streamRecv:                    b.config.recvMsgFunc,
+						msgProvider:                   b.config.dataStreamFunc,
+						streamInterceptorProviderFunc: b.config.streamInterceptorProviderFunc,
 					}
 
 					wc++ // increment worker id
